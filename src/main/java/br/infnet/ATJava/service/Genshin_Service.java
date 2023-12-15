@@ -2,73 +2,69 @@ package br.infnet.ATJava.service;
 
 import br.infnet.ATJava.model.GenshinResultDTO;
 import org.springframework.stereotype.Service;
-
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 
 @Service
 public class Genshin_Service {
-    // Simulando um banco de dados em memória para armazenar os personagens
-    private Map<Integer, GenshinResultDTO> personagens;
+    private List<GenshinResultDTO> personagens;
 
     public Genshin_Service() {
-        this.personagens = new HashMap<>();
-        // Adicionando alguns personagens de exemplo
-        adicionarExemplos();
+        this.personagens = new ArrayList<>();
+        adicionarPersonagens();
     }
 
-    // Método para adicionar personagens de exemplo ao iniciar o serviço
-    private void adicionarExemplos() {
-        GenshinResultDTO personagem1 = new GenshinResultDTO();
-        personagem1.setId(1);
-        personagem1.setName("Exemplo1");
-        // Define outros atributos...
-
-        GenshinResultDTO personagem2 = new GenshinResultDTO();
-        personagem2.setId(2);
-        personagem2.setName("Exemplo2");
-        // Define outros atributos...
-
-        personagens.put(1, personagem1);
-        personagens.put(2, personagem2);
+    private void adicionarPersonagens() {
+        personagens.add(new GenshinResultDTO(1, "Amber", Arrays.asList("Gliding Champion", "Outrider")));
+        personagens.add(new GenshinResultDTO(2, "Barbara", Arrays.asList("Shining Idol", "Deaconess")));
+        personagens.add(new GenshinResultDTO(3, "Beidou", Arrays.asList("Uncrowned Lord of the Ocean", "Queen of the Crux Fleet")));
+        personagens.add(new GenshinResultDTO(4, "Bennett", Arrays.asList("Trial by Fire", "Leader of Benny's Adventure Team")));
+        personagens.add(new GenshinResultDTO(5, "Chongyun", Arrays.asList("Frozen Ardor", "Banisher of Evil and Rumors Thereof")));
+        personagens.add(new GenshinResultDTO(6, "Fischl", Arrays.asList("Prinzessin der Verurteilung!", "Sovereign of Immernachtreich")));
+        personagens.add(new GenshinResultDTO(7, "Kaeya", Arrays.asList("Frostwind Swordsman", "Quartermaster of the Knights")));
     }
 
-    // Método para salvar um novo personagem
     public GenshinResultDTO salvarPersonagem(GenshinResultDTO novoPersonagem) {
-        int novoId = personagens.size() + 1; // Gerando um novo ID (simulação)
+        int novoId = personagens.size() + 1;
         novoPersonagem.setId(novoId);
-        personagens.put(novoId, novoPersonagem);
+        personagens.add(novoPersonagem);
         return novoPersonagem;
     }
 
-    // Método para atualizar um personagem existente
     public void atualizarPersonagem(int id, GenshinResultDTO personagemAtualizado) {
-        if (personagens.containsKey(id)) {
-            personagemAtualizado.setId(id);
-            personagens.put(id, personagemAtualizado);
-        } else {
+        boolean atualizado = false;
+        for (GenshinResultDTO personagem : personagens) {
+            if (personagem.getId() == id) {
+                personagemAtualizado.setId(id);
+                personagens.set(id - 1, personagemAtualizado);
+                atualizado = true;
+                break;
+            }
+        }
+        if (!atualizado) {
             throw new IllegalArgumentException("Personagem não encontrado para o ID fornecido: " + id);
         }
     }
 
-    // Método para deletar um personagem existente
     public void deletarPersonagem(int id) {
-        if (personagens.containsKey(id)) {
-            personagens.remove(id);
-        } else {
+        boolean removido = personagens.removeIf(p -> p.getId() == id);
+        if (!removido) {
             throw new IllegalArgumentException("Personagem não encontrado para o ID fornecido: " + id);
         }
     }
 
-    // Método para obter um personagem pelo ID
     public GenshinResultDTO obterPorId(int id) {
-        return personagens.getOrDefault(id, null);
+        for (GenshinResultDTO personagem : personagens) {
+            if (personagem.getId() == id) {
+                return personagem;
+            }
+        }
+        return null;
     }
 
-    // Método para obter todos os personagens
     public List<GenshinResultDTO> listarTodos() {
-        return new ArrayList<>(personagens.values());
+        return new ArrayList<>(personagens);
     }
 }

@@ -1,50 +1,43 @@
 package br.infnet.ATJava.controller;
 
-import br.infnet.ATJava.model.GenshinResponseDTO;
 import br.infnet.ATJava.model.GenshinResultDTO;
 import br.infnet.ATJava.service.Genshin_Service;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.*;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.client.RestTemplate;
 
+import java.util.List;
 
 @RestController
 @RequestMapping("/consulta-genshin/characters")
-public class GenshinAPI {
+public class GenshinController {
 
     @Autowired
-    private Genshin_Service genshinService; // Supondo que você tenha um serviço para processamento
-
-
+    private Genshin_Service genshinService;
 
     @GetMapping("/{id}")
     public ResponseEntity<GenshinResultDTO> consultarPersonagem(@PathVariable("id") int id) {
-        RestTemplate restTemplate = new RestTemplate();
-        ResponseEntity<String> responseEntity = restTemplate.getForEntity("https://gsi.fly.dev/characters/" + id, String.class);
-
-        if (responseEntity.getStatusCode().is2xxSuccessful()) {
-            String jsonString = responseEntity.getBody();
-
-            ObjectMapper objectMapper = new ObjectMapper();
-            try {
-                GenshinResponseDTO response = objectMapper.readValue(jsonString, GenshinResponseDTO.class);
-                GenshinResultDTO result = response.getResult();
-                return ResponseEntity.ok(result);
-            } catch (Exception e) {
-                e.printStackTrace();
-                return ResponseEntity.status(500).build();
-            }
+        GenshinResultDTO result = genshinService.obterPorId(id);
+        if (result != null) {
+            return ResponseEntity.ok(result);
         } else {
-            return ResponseEntity.status(responseEntity.getStatusCode()).build();
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    @GetMapping
+    public ResponseEntity<List<GenshinResultDTO>> listarPersonagens() {
+        List<GenshinResultDTO> personagens = genshinService.listarTodos();
+        if (!personagens.isEmpty()) {
+            return ResponseEntity.ok(personagens);
+        } else {
+            return ResponseEntity.noContent().build();
         }
     }
 
     @PostMapping
     public ResponseEntity<String> cadastrarPersonagem(@RequestBody GenshinResultDTO genshinResultDTO) {
-        // Implementação para cadastrar um novo personagem
-        // Supondo que a lógica para salvar um novo personagem esteja no serviço Genshin_Service
         try {
             GenshinResultDTO novoPersonagem = genshinService.salvarPersonagem(genshinResultDTO);
             return ResponseEntity.status(HttpStatus.CREATED).body("Personagem cadastrado com sucesso: " + novoPersonagem.getId());
@@ -56,8 +49,6 @@ public class GenshinAPI {
 
     @PutMapping("/{id}")
     public ResponseEntity<String> atualizarPersonagem(@PathVariable("id") int id, @RequestBody GenshinResultDTO genshinResultDTO) {
-        // Implementação para atualizar um personagem existente por ID
-        // Supondo que a lógica para atualizar um personagem esteja no serviço Genshin_Service
         try {
             genshinService.atualizarPersonagem(id, genshinResultDTO);
             return ResponseEntity.ok("Personagem atualizado com sucesso.");
@@ -69,8 +60,6 @@ public class GenshinAPI {
 
     @DeleteMapping("/{id}")
     public ResponseEntity<String> deletarPersonagem(@PathVariable("id") int id) {
-        // Implementação para deletar um personagem por ID
-        // Supondo que a lógica para deletar um personagem esteja no serviço Genshin_Service
         try {
             genshinService.deletarPersonagem(id);
             return ResponseEntity.ok("Personagem deletado com sucesso.");
@@ -80,4 +69,3 @@ public class GenshinAPI {
         }
     }
 }
-//TESTE PARA COMIT
